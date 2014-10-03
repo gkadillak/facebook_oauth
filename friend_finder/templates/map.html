@@ -1,0 +1,18 @@
+{% extends 'base_template.html' %}
+{% load staticfiles %}
+
+{% block extra_head %}
+    <script src="https://maps.googleapis.com/maps/api/js"></script>
+    <script type="text/javascript" src="{% static "js/map.js" %}"></script>
+    <link rel="stylesheet" type="text/css" href="{% static "css/map.css" %}">
+      <script type="text/javascript">
+        var photoData = {{ photo_json|safe }};
+      </script>
+{% endblock extra_head %}
+
+{% block content %}
+    <div id="map-container">
+        <div id="map_canvas"></div>
+    </div>
+
+{% endblock content %}
