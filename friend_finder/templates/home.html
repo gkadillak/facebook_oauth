@@ -1,5 +1,22 @@
 {% extends 'base_template.html' %}
+{% load staticfiles %}
+{% load staticfiles %}
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/microphone.min.css' %}">
+{% endblock extra_head %}
+
 
 {% block content %}
 <h1>Feedr!</h1>
+<div id="microphone"></div>
+    <pre id="result"></pre>
+    <div id="info"></div>
+    <div id="error"></div>
+
+
+
+
+
+    <script src="{% static 'js/microphone.min.js' %}"></script>
+    <script src={% static 'js/voice_control.js' %}></script>
 {% endblock content %}

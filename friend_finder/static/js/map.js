@@ -1,3 +1,79 @@
+var currentSearch = {};
+var currentFBResults = {};
+
+
+
+// Function to call facebook and
+function facebookInit(intent) {
+    window.fbAsyncInit = function () {
+        FB.init({
+            appId: '779403745457956',
+            xfbml: true,
+            cookie: true,
+            version: 'v2.1'
+        });
+
+        FB.login(function (response){},{scope: 'user_friends, publish_actions'});
+
+//        FB.login(function (response) {
+//            if (response.authResponse) {
+//                console.log('Welcome!')
+//            }
+//        });
+
+        // "WHAT IS MY LAST NAME"
+        if (intent === 'get_lastname') {
+            FB.getLoginStatus(function (response) {
+                if (response.status === 'connected') {
+                    FB.api(
+                        '/me',
+                    function (response) {
+                        currentFBResults = response;
+                        console.log(response);
+
+                        $('#displaymessage').html('Hello Mr. ' + response.last_name + '. How are you today?');
+                    });
+                }
+            });
+        } //lastname check
+
+
+        // "POST {message body}"
+        if (intent === 'post') {
+            FB.getLoginStatus(function (response) {
+                if (response.status === 'connected') {
+                        FB.api(
+                        "/me/feed",
+                        "POST",
+                            {"message": currentSearch.message_body},
+
+                            function (response) {
+                                console.log(response);
+                            if (response && !response.error) {
+                             console.log('SUCCESS!!!');
+                             console.log(response);
+                            }
+                        }
+                    );
+                }
+            }, true);
+        }
+
+    }; //AsyncInit
+
+
+    (function (d, s, id) {
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) {
+            return;
+        }
+        js = d.createElement(s);
+        js.id = id;
+        js.src = "//connect.facebook.net/en_US/sdk.js";
+        fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+}
+
 function initialize() {
     var map_canvas = document.getElementById('map_canvas');
     var map_options = {
@@ -9,7 +85,7 @@ function initialize() {
 
       for (var i = 0; i < photoData.length; i++) {
         var photo = photoData[i];
-        if (photo.place != undefined) {
+        if (photo.place != undefined && photo.name != undefined) {
             addMarker(photo, map, i);
         }
     }
@@ -18,12 +94,13 @@ function initialize() {
 var markers = [];
 var infoWindows = [];
 
+// Google maps w/ facebook pictures geographically
 function addMarker(photo, map, counter) {
     var myLatLng = new google.maps.LatLng(photo.place.location.latitude,
                                           photo.place.location.longitude);
 
     var image = {
-        url: photo.picture,
+        url: photo.url,
         scaledSize: new google.maps.Size(200, 200),
 
     };
@@ -37,6 +114,7 @@ function addMarker(photo, map, counter) {
         map: map,
         title: photo.name,
         infoWindow: infoWindows[counter],
+
     });
 
     google.maps.event.addListener(markers[counter], 'click', function () {
@@ -45,4 +123,86 @@ function addMarker(photo, map, counter) {
     })
 }
 
-google.maps.event.addDomListener(window, 'load', initialize);
+
+var mic = new Wit.Microphone(document.getElementById("microphone"));
+      var info = function (msg) {
+        document.getElementById("info").innerHTML = msg;
+      };
+      var error = function (msg) {
+        document.getElementById("error").innerHTML = msg;
+      };
+      mic.onready = function () {
+        info("Microphone is ready to record");
+      };
+      mic.onaudiostart = function () {
+        info("Recording started");
+        error("");
+      };
+      mic.onaudioend = function () {
+        info("Recording stopped, processing started");
+      };
+
+      mic.onresult = function (intent, entities) {
+        var resultObj = {};
+        resultObj['intent'] = voice_string("intent", intent)[1];
+
+        for (var key in entities) {
+          var entity = entities[key];
+
+
+          if (!(entity instanceof Array)) {
+//            result += voice_string(key, entity.value);
+              resultObj[voice_string(key, entity.value)[0]] = voice_string(key, entity.value)[1];
+              console.log(resultObj);
+
+
+          } else {
+            for (var i = 0; i < entity.length; i++) {
+//              result += voice_string(key, entity[i].value);
+              resultObj[voice_string(key, entity[i].value)[0]] = voice_string(key, entity[i].value)[1];
+                console.log(resultObj);
+
+
+
+            }
+          }
+        }
+
+        document.getElementById("result").innerHTML = result;
+          if (resultObj.intent === 'get_pictures') {
+              initialize();
+          }
+          currentSearch = resultObj;
+          console.log("POST BODY: " + currentSearch.message_body);
+
+          facebookInit(currentSearch.intent);
+
+
+
+      };
+      mic.onerror = function (err) {
+        error("Error: " + err);
+      };
+      mic.onconnecting = function () {
+        info("Microphone is connecting");
+      };
+      mic.ondisconnected = function () {
+        info("Microphone is not connected");
+      };
+
+      mic.connect('7Q3QCU74BR4O2A6ERD4YZAL4VM3BXLLE');
+//      mic.start();
+//      mic.stop();
+
+      function voice_string(key, value) {
+        if (toString.call(value) !== "[object String]") {
+          value = JSON.stringify(value);
+            console.log(value);
+        }
+        return [key, value];
+      }
+
+
+
+
+
