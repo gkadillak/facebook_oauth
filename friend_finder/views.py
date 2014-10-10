@@ -36,9 +36,6 @@ def maps(request):
     return render(request, 'map.html', {'photo_json': json.dumps(photos['data'])})
 
 
-def jslogin(request):
-    return render(request, 'jslogin.html')
-
 
 
 

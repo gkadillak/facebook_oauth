@@ -13,6 +13,5 @@ urlpatterns = patterns('',
     url(r'^logout/$', 'django.contrib.auth.views.logout', name='logout'),
     url(r'^profile/$', 'friend_finder.views.profile', name='profile'),
     url(r'^maps/$', 'friend_finder.views.maps', name='maps'),
-    url(r'^jslogin/$', 'friend_finder.views.jslogin', name='jlogin'),
 
 )

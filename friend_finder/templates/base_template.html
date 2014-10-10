@@ -3,18 +3,13 @@
 
 <html>
     <head>
-        <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-{#        <script type='text/javascript' src="{% static 'js/instagram.js' %}"></script>#}
         {% block extra_head %} {% endblock extra_head %}
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+        <script src="{% static 'js/bootstrap.js' %}"></script>
+        <script src="{% static 'js/jquery.smooth-scroll.js' %}"></script>
+        <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
     </head>
     <body>
-        <nav>
-            {% if not user.is_authenticated %}
-                <a href="{% url 'social:begin' 'facebook' %}">Facebook Login</a>
-            {% else %}
-                Hi {{ user.username }}!
-            {% endif %}
-        </nav>
         {% block content %}{% endblock content %}
     </body>
 </html>

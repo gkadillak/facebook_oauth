@@ -10,7 +10,7 @@ var currentFBResults = {};
             version: 'v2.1'
         });
 
-        FB.login(function (response) {}, {scope: 'user_friends, publish_actions'});
+        FB.login(function (response) {}, {scope: 'user_friends, publish_actions, read_stream'});
 
 
         }; //AsyncInit
@@ -24,49 +24,60 @@ var currentFBResults = {};
     }(document, 'script', 'facebook-jssdk'));
 
 
-function facebookInit(intent) {
-            // "POST {message body}"
-            if (intent === 'post') {
-                FB.getLoginStatus(function (response) {
-                    if (response.status === 'connected') {
-                        FB.api(
-                            "/me/feed",
-                            "POST",
-                            {"message": currentSearch.message_body},
+    function facebookInit(intent) {
+        // "POST {message body}"
+        if (intent === 'post') {
+            FB.getLoginStatus(function (response) {
+                if (response.status === 'connected') {
+                    FB.api(
+                        "/me/feed",
+                        "POST",
+                        {"message": currentSearch.message_body},
 
-                            function (response) {
-                                console.log(response);
-                                if (response && !response.error) {
-                                    console.log('SUCCESS!!!');
-                                    console.log(response);
-                                    console.log(currentSearch);
-                                    console.log(currentFBResults);
-
-                                }
-                            }
-                        );
-                    }
-                });
-            }
-
-            // "WHAT IS MY LAST NAME"
-            if (intent === 'get_lastname') {
-                FB.getLoginStatus(function (response) {
-                    if (response.status === 'connected') {
-                        FB.api(
-                            '/me',
-                            function (response) {
-                                currentFBResults = response;
+                        function (response) {
+                            console.log(response);
+                            if (response && !response.error) {
+                                console.log('SUCCESS!!!');
                                 console.log(response);
                                 console.log(currentSearch);
                                 console.log(currentFBResults);
+                            }
+                        }
+                    );
+                }
+            });
+        }
 
-                                $('#displaymessage').html('Hello Mr. ' + response.last_name + '. How are you today?');
-                            });
-                    }
-                });
-            } //lastname check
-}
+        // "WHAT IS MY LAST NAME"
+        if (intent === 'get_lastname') {
+            FB.getLoginStatus(function (response) {
+                if (response.status === 'connected') {
+                    FB.api(
+                        '/me',
+                        function (response) {
+                            currentFBResults = response;
+                            console.log(response);
+                            $('#displaymessage').html('Hello Mr. ' + response.last_name + '. How are you today?');
+                        });
+                }
+            });
+        } //lastname check
+
+        if (intent === 'get_feed') {
+            FB.getLoginStatus(function (response){
+               FB.api(
+                    '/me/home',
+                   function (response){
+                       console.log(response);
+                       for (var i = 0; i < response.data.length; i++) {
+                           $('#feedList').append('<li>' + response.data[i].name + '</li>');
+                           $('#feedList').append('<img src="' + response.data[i].picture + '">');
+                       }
+                   }
+               )
+            });
+        } // home page of facebook
+    }
 
 
     function initialize() {
@@ -89,7 +100,7 @@ function facebookInit(intent) {
     var markers = [];
     var infoWindows = [];
 
-// Google maps w/ facebook pictures geographically
+    // Google maps w/ facebook pictures geographically
     function addMarker(photo, map, counter) {
         var myLatLng = new google.maps.LatLng(photo.place.location.latitude,
             photo.place.location.longitude);
@@ -118,9 +129,6 @@ function facebookInit(intent) {
         })
     }
 
-$('#microphone').on('click', function(){
-
-    });
 
     var mic = new Wit.Microphone(document.getElementById("microphone"));
     var info = function (msg) {
@@ -192,3 +200,12 @@ $('#microphone').on('click', function(){
         return [key, value];
     }
 
+// https://github.com/kswedberg/jquery-smooth-scroll
+$('#scroll').on('click', function () {
+    $.smoothScroll(200);
+
+});
+
+$('.getOut').on('click', function(){
+    $(this).parent().parent().parent().hide(400);
+});
