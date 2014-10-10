@@ -27,7 +27,7 @@ def profile(request):
     return render(request, 'profile.html', profile_data)
 
 
-@login_required
+
 def maps(request):
     user_social_auth = request.user.social_auth.filter(provider='facebook').first()
     graph = facebook.GraphAPI(user_social_auth.extra_data['access_token'])

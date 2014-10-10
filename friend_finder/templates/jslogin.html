@@ -2,7 +2,10 @@
 {% load staticfiles %}
 
 {% block content %}
+
+    <button id="testBtn">Press this to test facebook</button>
     <script>
+    /*
     window.fbAsyncInit = function() {
         FB.init({
           appId      : '779403745457956',
@@ -42,7 +45,9 @@
          js.src = "//connect.facebook.net/en_US/sdk.js";
          fjs.parentNode.insertBefore(js, fjs);
        }(document, 'script', 'facebook-jssdk'));
-
+       */
     </script>
+
+    <script src="{% static 'js/map.js' %}"></script>
 
 {% endblock content %}
