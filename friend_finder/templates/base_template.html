@@ -3,11 +3,11 @@
 
 <html>
     <head>
-        {% block extra_head %} {% endblock extra_head %}
         <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
         <script src="{% static 'js/bootstrap.js' %}"></script>
         <script src="{% static 'js/jquery.smooth-scroll.js' %}"></script>
         <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
+        {% block extra_head %} {% endblock extra_head %}
     </head>
     <body>
         {% block content %}{% endblock content %}

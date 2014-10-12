@@ -70,8 +70,43 @@ var currentFBResults = {};
                    function (response){
                        console.log(response);
                        for (var i = 0; i < response.data.length; i++) {
-                           $('#feedList').append('<li>' + response.data[i].name + '</li>');
-                           $('#feedList').append('<img src="' + response.data[i].picture + '">');
+                           // Only get the 'photo' types
+                           if (response.data[i].type === 'photo') {
+                               var rawPic;
+                               var message;
+                               var avatar;
+                               var author;
+                               var postNumber;
+                               if (response.data[i].picture.search('s130x130') > 0) {
+                                   rawPic = response.data[i].picture.replace('/s130x130', '');
+                               }
+                               else  {
+                                   rawPic = response.data[i].picture.replace('/p130x130', '');
+                               }
+
+                               var largePic = rawPic.replace('/v', '');
+
+                               if (typeof response.data[i].message != 'undefined') {
+                                   message = response.data[i].message
+                               }
+
+                               else{
+                                   message = '';
+                               }
+                               avatar = "https://graph.facebook.com/" + response.data[i].from.id + "/picture";
+                               author = response.data[i].from.name;
+                               postNumber = i;
+                               var frontTiles = imageTile(largePic, message, avatar, author, postNumber);
+                               $('#frontTile').append(frontTiles);
+                           }
+
+                           else if (response.data[i].type === 'status') {
+                               var comment = response.data[i].message;
+                               var avatar = "https://graph.facebook.com/" + response.data[i].from.id + "/picture";
+                               var author = response.data[i].from.name;
+                               var frontTiles = commentTile(comment, avatar, author);
+                               $('#frontTile').append(frontTiles);
+                           }
                        }
                    }
                )
@@ -79,7 +114,32 @@ var currentFBResults = {};
         } // home page of facebook
     }
 
+function imageTile(imageSrc, title, avatar, author, number) {
 
+    return "<div class='col-sm-6 col-md-4'>" +
+            "<div class='thumbnail'>" +
+                "<p>" + number + "</p>" +
+                "<p><img src='" + avatar +  "' />" + author+ "</p>" +
+                "<img src='" + imageSrc + "' data-src='holder.js/300x300' alt='...'>" +
+                "<div class='caption'>" +
+                "<h3>" + title + "</h3>" +
+            "</div>" +
+            "</div>" +
+        "</div>";
+}
+
+function commentTile(comment, avatar, author){
+    return "<div class='col-sm-6 col-md-4'>" +
+        "<div class='thumbnail'>" +
+            "<p><img src='" + avatar +  "' />" + author+ "</p>" +
+            "<p>" + comment + "</p>" +
+            "<div class='caption'>" +
+        "</div>" +
+        "</div>" +
+    "</div>";
+}
+
+    var newStr = 'Here we go';
     function initialize() {
         var map_canvas = document.getElementById('map_canvas');
         var map_options = {
@@ -138,14 +198,14 @@ var currentFBResults = {};
         document.getElementById("error").innerHTML = msg;
     };
     mic.onready = function () {
-        info("Microphone is ready to record");
+        info("");
     };
     mic.onaudiostart = function () {
-        info("Recording started");
+        info("");
         error("");
     };
     mic.onaudioend = function () {
-        info("Recording stopped, processing started");
+        info("");
     };
 
     mic.onresult = function (intent, entities) {
@@ -208,4 +268,8 @@ $('#scroll').on('click', function () {
 
 $('.getOut').on('click', function(){
     $(this).parent().parent().parent().hide(400);
+});
+
+$('#topjumbo').on('click', function() {
+   $(this).fadeOut(400);
 });
