@@ -1,6 +1,6 @@
 var currentSearch = {};
 var currentFBResults = {};
-
+var tileObj = {};
     // Function to call facebook and
     window.fbAsyncInit = function () {
         FB.init({
@@ -47,6 +47,21 @@ var currentFBResults = {};
                 }
             });
         }
+        if (intent === 'like_post') {
+            FB.getLoginStatus(function (response){
+                if (response.status === 'connected') {
+                    FB.api (
+                        '/' + tileObj[currentSearch.number] + '/likes',
+                        'POST',
+                        function (response){
+                            if (response && !response.error) {
+                            console.log(response);
+                          }
+                        }
+                    )
+                }
+            })
+        }
 
         // "WHAT IS MY LAST NAME"
         if (intent === 'get_lastname') {
@@ -77,6 +92,7 @@ var currentFBResults = {};
                                var avatar;
                                var author;
                                var postNumber;
+
                                if (response.data[i].picture.search('s130x130') > 0) {
                                    rawPic = response.data[i].picture.replace('/s130x130', '');
                                }
@@ -93,27 +109,41 @@ var currentFBResults = {};
                                else{
                                    message = '';
                                }
+
+                               // Avatar is the mini profile picture
                                avatar = "https://graph.facebook.com/" + response.data[i].from.id + "/picture";
                                author = response.data[i].from.name;
                                postNumber = i;
+
+                               // Create the HTML styling and add to page
                                var frontTiles = imageTile(largePic, message, avatar, author, postNumber);
                                $('#frontTile').append(frontTiles);
+                               // Add the object ID to a global object to be able to 'like' it later
+                               tileObj[i] = response.data[i].id;
+
                            }
 
                            else if (response.data[i].type === 'status') {
                                var comment = response.data[i].message;
                                var avatar = "https://graph.facebook.com/" + response.data[i].from.id + "/picture";
                                var author = response.data[i].from.name;
-                               var frontTiles = commentTile(comment, avatar, author);
+                               var number = i;
+                               var frontTiles = commentTile(comment, avatar, author, number);
                                $('#frontTile').append(frontTiles);
+
+                               // Add the object ID to a global object to be able to 'like' it later
+                               tileObj[i] = response.data[i].id;
                            }
                        }
+                      console.log(tileObj);
+                      console.log(currentSearch);
                    }
                )
             });
         } // home page of facebook
     }
 
+// Tile creator functions
 function imageTile(imageSrc, title, avatar, author, number) {
 
     return "<div class='col-sm-6 col-md-4'>" +
@@ -128,9 +158,10 @@ function imageTile(imageSrc, title, avatar, author, number) {
         "</div>";
 }
 
-function commentTile(comment, avatar, author){
+function commentTile(comment, avatar, author, number){
     return "<div class='col-sm-6 col-md-4'>" +
         "<div class='thumbnail'>" +
+            "<p>" + number + "</p>" +
             "<p><img src='" + avatar +  "' />" + author+ "</p>" +
             "<p>" + comment + "</p>" +
             "<div class='caption'>" +

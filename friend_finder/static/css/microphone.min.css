@@ -113,3 +113,7 @@ body {
     z-index: 10000;
     box-shadow: 0px 3px 5px rgba(0,0,0,.5);
 }
+
+#frontTile {
+    margin-top: 10%;
+}
