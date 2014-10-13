@@ -116,4 +116,18 @@ body {
 
 #frontTile {
     margin-top: 10%;
+
+}
+
+#fullTile {
+    margin-top: 0%;
+    margin-bottom: 0%;
+    margin-left: 0px;
+    margin-right: 0px;
+}
+
+#navTitle {
+    color: white;
+    font-family: 'Oleo Script', cursive;
+    font-size: 35px;
 }

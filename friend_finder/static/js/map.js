@@ -10,7 +10,7 @@ var tileObj = {};
             version: 'v2.1'
         });
 
-        FB.login(function (response) {}, {scope: 'user_friends, publish_actions, read_stream'});
+        FB.login(function (response) {}, {scope: 'user_friends, publish_actions, read_stream, manage_notifications'});
 
 
         }; //AsyncInit
@@ -25,6 +25,105 @@ var tileObj = {};
 
 
     function facebookInit(intent) {
+        if (intent === 'show_profile') {
+            FB.getLoginStatus(function (response) {
+                if (response.status === 'connected') {
+                    FB.api(
+                        "/me/feed",
+                        function (response) {
+                            // Hard code '0' just to get the profile owner out
+                            console.log(response);
+                            $('#front_title').hide(400);
+                            $('#frontTile').append('<h1>' + response.data[0].from.name + '</h1>');
+                            for (var i = 0; i < response.data.length; i++) {
+                                // Only get the 'photo' types
+                                if (response.data[i].type === 'photo') {
+                                    var rawPic;
+                                    var message;
+                                    var avatar;
+                                    var author;
+                                    var postNumber;
+                                    var story;
+                                    var linkNum;
+
+                                    if (response.data[i].picture.search('s130x130') > 0) {
+                                        rawPic = response.data[i].picture.replace('/s130x130', '');
+                                    }
+                                    else {
+                                        rawPic = response.data[i].picture.replace('/p130x130', '');
+                                    }
+
+                                    var largePic = rawPic.replace('/v', '');
+
+                                    // Show the message if it exists
+                                    if (typeof response.data[i].message != 'undefined') {
+                                        message = response.data[i].message
+                                    }
+
+                                    else {
+                                        message = '';
+                                    }
+
+                                    // Display the story if it exists
+                                    if (typeof response.data[i].story != 'undefined') {
+                                        story = response.data[i].story;
+                                    }
+                                    else {
+                                        story = '';
+                                    }
+
+                                    // Avatar is the mini profile picture
+                                    avatar = "https://graph.facebook.com/" + response.data[i].from.id + "/picture";
+                                    author = response.data[i].from.name;
+                                    postNumber = i;
+                                    linkNum = i;
+
+
+                                    // Create the HTML styling and add to page
+                                    var frontTiles = imageTile(largePic, message, avatar, author, postNumber, story, linkNum);
+                                    $('#frontTile').append(frontTiles);
+
+
+                                    // Add the object ID to a global object to be able to 'like' it later
+                                    tileObj[i] = response.data[i].id;
+
+                                }
+
+                                else if (response.data[i].type === 'status') {
+                                    var comment;
+                                    if (typeof response.data[i].message != 'undefined') {
+                                            comment = response.data[i].message;
+                                        }
+                                    else {
+                                        comment = response.data[i].story;
+                                    }
+
+                                    var avatar = "https://graph.facebook.com/" + response.data[i].from.id + "/picture";
+                                    var author = response.data[i].from.name;
+                                    var number = i;
+                                    var likeNum = i;
+                                    var frontTiles = commentTile(comment, avatar, author, number, likeNum);
+                                    $('#frontTile').append(frontTiles);
+
+                                    // Add the object ID to a global object to be able to 'like' it later
+                                    tileObj[i] = response.data[i].id;
+                                }
+                            }
+                        }
+                    );
+                }
+              });
+        }
+
+        if (intent === 'scroll') {
+            if (currentSearch.direction === 'down') {
+                $.smoothScroll(200);
+            }
+
+            else if (currentSearch.direction === 'up') {
+                    $.smoothScroll(-200);
+            }
+        }
         // "POST {message body}"
         if (intent === 'post') {
             FB.getLoginStatus(function (response) {
@@ -33,20 +132,21 @@ var tileObj = {};
                         "/me/feed",
                         "POST",
                         {"message": currentSearch.message_body},
-
                         function (response) {
                             console.log(response);
                             if (response && !response.error) {
                                 console.log('SUCCESS!!!');
                                 console.log(response);
-                                console.log(currentSearch);
-                                console.log(currentFBResults);
+                                alert('You posted:\n' + currentSearch.message_body);
+
                             }
                         }
                     );
                 }
             });
         }
+
+        // LIKE TILE {TILE NUMBER}
         if (intent === 'like_post') {
             FB.getLoginStatus(function (response){
                 if (response.status === 'connected') {
@@ -54,8 +154,12 @@ var tileObj = {};
                         '/' + tileObj[currentSearch.number] + '/likes',
                         'POST',
                         function (response){
+                            // If success, append a cute little thumbs up next to the post number
                             if (response && !response.error) {
                             console.log(response);
+                            $('#like_' + currentSearch.number).html(
+                                '<img src="http://3.bp.blogspot.com/-6dmLiW9yjrE/TrI4xXtpPLI/AAAAAAAAB5M/ozDIGs0LOkE/s400/FacebookChatEmoticonsTumbUpLikeMessengeRoo.jpg" />'
+                            );
                           }
                         }
                     )
@@ -78,12 +182,14 @@ var tileObj = {};
             });
         } //lastname check
 
+        // GET MY FEED
         if (intent === 'get_feed') {
             FB.getLoginStatus(function (response){
                FB.api(
                     '/me/home',
                    function (response){
                        console.log(response);
+                       $('#front_title').hide(400);
                        for (var i = 0; i < response.data.length; i++) {
                            // Only get the 'photo' types
                            if (response.data[i].type === 'photo') {
@@ -92,6 +198,8 @@ var tileObj = {};
                                var avatar;
                                var author;
                                var postNumber;
+                               var story;
+                               var linkNum;
 
                                if (response.data[i].picture.search('s130x130') > 0) {
                                    rawPic = response.data[i].picture.replace('/s130x130', '');
@@ -102,33 +210,48 @@ var tileObj = {};
 
                                var largePic = rawPic.replace('/v', '');
 
+                               // Show the message if it exists
                                if (typeof response.data[i].message != 'undefined') {
                                    message = response.data[i].message
                                }
 
-                               else{
+                               else {
                                    message = '';
+                               }
+
+                               // Display the story if it exists
+                               if (typeof response.data[i].story != 'undefined'){
+                                   story = response.data[i].story;
+                               }
+                               else {
+                                   story = '';
                                }
 
                                // Avatar is the mini profile picture
                                avatar = "https://graph.facebook.com/" + response.data[i].from.id + "/picture";
                                author = response.data[i].from.name;
                                postNumber = i;
+                               linkNum = i;
+
 
                                // Create the HTML styling and add to page
-                               var frontTiles = imageTile(largePic, message, avatar, author, postNumber);
+                               var frontTiles = imageTile(largePic, message, avatar, author, postNumber, story, linkNum);
                                $('#frontTile').append(frontTiles);
+
+
                                // Add the object ID to a global object to be able to 'like' it later
                                tileObj[i] = response.data[i].id;
 
                            }
 
                            else if (response.data[i].type === 'status') {
+
                                var comment = response.data[i].message;
                                var avatar = "https://graph.facebook.com/" + response.data[i].from.id + "/picture";
                                var author = response.data[i].from.name;
                                var number = i;
-                               var frontTiles = commentTile(comment, avatar, author, number);
+                               var likeNum = i;
+                               var frontTiles = commentTile(comment, avatar, author, number, likeNum);
                                $('#frontTile').append(frontTiles);
 
                                // Add the object ID to a global object to be able to 'like' it later
@@ -144,25 +267,27 @@ var tileObj = {};
     }
 
 // Tile creator functions
-function imageTile(imageSrc, title, avatar, author, number) {
+function imageTile(imageSrc, title, avatar, author, number, story, likeNum) {
 
-    return "<div class='col-sm-6 col-md-4'>" +
+    return "<div class='col-sm-6 col-md-4' id='fullTile'>" +
             "<div class='thumbnail'>" +
-                "<p>" + number + "</p>" +
-                "<p><img src='" + avatar +  "' />" + author+ "</p>" +
-                "<img src='" + imageSrc + "' data-src='holder.js/300x300' alt='...'>" +
-                "<div class='caption'>" +
+                "<p>" + number + "<span id='like_" + likeNum + "'</span></p>" +
+                "<p><img src='" + avatar +  "' /> " + author+ "</p>" +
                 "<h3>" + title + "</h3>" +
+                "<p>" + story + "</p>" +
+                "<img src='" + imageSrc + "' data-src='holder.js/200x200' alt='...'>" +
+                "<div class='caption'>" +
             "</div>" +
             "</div>" +
         "</div>";
 }
 
-function commentTile(comment, avatar, author, number){
-    return "<div class='col-sm-6 col-md-4'>" +
+function commentTile(comment, avatar, author, number, likeNum){
+
+    return "<div class='col-sm-6 col-md-4' id='fullTile'>" +
         "<div class='thumbnail'>" +
             "<p>" + number + "</p>" +
-            "<p><img src='" + avatar +  "' />" + author+ "</p>" +
+            "<p><img src='" + avatar +  "' /> " + author+ "<span id='like_'" + likeNum + "'></span></p>" +
             "<p>" + comment + "</p>" +
             "<div class='caption'>" +
         "</div>" +
@@ -170,7 +295,8 @@ function commentTile(comment, avatar, author, number){
     "</div>";
 }
 
-    var newStr = 'Here we go';
+
+
     function initialize() {
         var map_canvas = document.getElementById('map_canvas');
         var map_options = {
@@ -265,7 +391,6 @@ function commentTile(comment, avatar, author, number){
             initialize();
         }
         currentSearch = resultObj;
-        console.log("POST BODY: " + currentSearch.message_body);
         facebookInit(currentSearch.intent);
 
 

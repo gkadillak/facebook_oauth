@@ -1,6 +1,6 @@
 {
-  "firebase": "popping-heat-958",
-  "public": ".",
+  "firebase": "speaktofacebook",
+  "public": "/Users/GKadillak/Projects/feedr/friend_finder/templates",
   "ignore": [
     "firebase.json",
     "**/.*",
