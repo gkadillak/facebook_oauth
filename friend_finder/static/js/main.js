@@ -35,6 +35,7 @@ var tileObj = {};
                             if ($('#frontTile').has('div').length > 0) {
                                 $('#frontTile').empty();
                             }
+
                             // Hard code '0' just to get the profile owner out
                             console.log(response);
                             $('#front_title').hide(400);
@@ -177,7 +178,7 @@ var tileObj = {};
                         '/me',
                         function (response) {
                             currentFBResults = response;
-                            console.log(response);
+
                             $('#displaymessage').html('Hello Mr. ' + response.last_name + '. How are you today?');
                         });
                 }
@@ -193,7 +194,7 @@ var tileObj = {};
                        if ($('#frontTile').has('div').length > 0) {
                            $('#frontTile').empty();
                        }
-                       console.log(response);
+
                        $('#front_title').hide(400);
                        for (var i = 0; i < response.data.length; i++) {
                            // Only get the 'photo' types
@@ -263,8 +264,6 @@ var tileObj = {};
                                tileObj[i] = response.data[i].id;
                            }
                        }
-                      console.log(tileObj);
-                      console.log(currentSearch);
                    }
                )
             });
