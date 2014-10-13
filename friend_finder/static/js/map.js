@@ -159,7 +159,6 @@ var tileObj = {};
                             // If success, append a cute little thumbs up next to the post number
                             if (response && !response.error) {
                             console.log(response);
-
                             $('#like_' + currentSearch.number).html(
                                 '<img src="http://3.bp.blogspot.com/-6dmLiW9yjrE/TrI4xXtpPLI/AAAAAAAAB5M/ozDIGs0LOkE/s400/FacebookChatEmoticonsTumbUpLikeMessengeRoo.jpg" />'
                             );
@@ -293,7 +292,7 @@ function commentTile(comment, avatar, author, number, likeNum){
     return "<div class='col-sm-6 col-md-4' id='fullTile'>" +
         "<div class='thumbnail'>" +
             "<p>" + number + "</p>" +
-            "<p><img src='" + avatar +  "' /> " + author+ "<span id='like_'" + likeNum + "'></span></p>" +
+            "<p><img src='" + avatar +  "' /> " + author+ "<span id='like_" + likeNum + "'></span></p>" +
             "<p>" + comment + "</p>" +
             "<div class='caption'>" +
         "</div>" +
