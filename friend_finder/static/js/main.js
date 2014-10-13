@@ -291,8 +291,8 @@ function commentTile(comment, avatar, author, number, likeNum){
 
     return "<div class='col-sm-6 col-md-4' id='fullTile'>" +
         "<div class='thumbnail'>" +
-            "<p>" + number + "</p>" +
-            "<p><img src='" + avatar +  "' /> " + author+ "<span id='like_" + likeNum + "'></span></p>" +
+            "<p>" + number + "<span id='like_" + likeNum + "'></span></p>" +
+            "<p><img src='" + avatar +  "' /> " + author + "</p>" +
             "<p>" + comment + "</p>" +
             "<div class='caption'>" +
         "</div>" +
