@@ -1,7 +1,8 @@
 var currentSearch = {};
 var currentFBResults = {};
 var tileObj = {};
-    // Function to call facebook and
+
+    // Front end authentication
     window.fbAsyncInit = function () {
         FB.init({
             appId: '779403745457956',
@@ -127,6 +128,7 @@ var tileObj = {};
                     $.smoothScroll(-200);
             }
         }
+
         // "POST {message body}"
         if (intent === 'post') {
             FB.getLoginStatus(function (response) {
@@ -136,10 +138,7 @@ var tileObj = {};
                         "POST",
                         {"message": currentSearch.message_body},
                         function (response) {
-                            console.log(response);
                             if (response && !response.error) {
-                                console.log('SUCCESS!!!');
-                                console.log(response);
                                 alert('You posted:\n' + currentSearch.message_body);
 
                             }
@@ -160,6 +159,7 @@ var tileObj = {};
                             // If success, append a cute little thumbs up next to the post number
                             if (response && !response.error) {
                             console.log(response);
+
                             $('#like_' + currentSearch.number).html(
                                 '<img src="http://3.bp.blogspot.com/-6dmLiW9yjrE/TrI4xXtpPLI/AAAAAAAAB5M/ozDIGs0LOkE/s400/FacebookChatEmoticonsTumbUpLikeMessengeRoo.jpg" />'
                             );
@@ -353,85 +353,74 @@ function commentTile(comment, avatar, author, number, likeNum){
     }
 
 
-    var mic = new Wit.Microphone(document.getElementById("microphone"));
-    var info = function (msg) {
-        document.getElementById("info").innerHTML = msg;
-    };
-    var error = function (msg) {
-        document.getElementById("error").innerHTML = msg;
-    };
-    mic.onready = function () {
-        info("");
-    };
-    mic.onaudiostart = function () {
-        info("");
-        error("");
-    };
-    mic.onaudioend = function () {
-        info("");
-    };
+// Take in microphone audio, translate to intent string and pull out
+var mic = new Wit.Microphone(document.getElementById("microphone"));
+var info = function (msg) {
+    document.getElementById("info").innerHTML = msg;
+};
+var error = function (msg) {
+    document.getElementById("error").innerHTML = msg;
+};
+mic.onready = function () {
+    info("");
+};
+mic.onaudiostart = function () {
+    info("");
+    error("");
+};
+mic.onaudioend = function () {
+    info("");
+};
 
-    mic.onresult = function (intent, entities) {
-        var resultObj = {};
-        resultObj['intent'] = voice_string("intent", intent)[1];
-
-
-        for (var key in entities) {
-            var entity = entities[key];
+mic.onresult = function (intent, entities) {
+    var resultObj = {};
+    resultObj['intent'] = voice_string("intent", intent)[1];
 
 
-            if (!(entity instanceof Array)) {
-                resultObj[voice_string(key, entity.value)[0]] = voice_string(key, entity.value)[1];
-                console.log(resultObj);
+    for (var key in entities) {
+        var entity = entities[key];
 
 
-            } else {
-                for (var i = 0; i < entity.length; i++) {
-                    resultObj[voice_string(key, entity[i].value)[0]] = voice_string(key, entity[i].value)[1];
-                    console.log(resultObj);
-                }
+        if (!(entity instanceof Array)) {
+            resultObj[voice_string(key, entity.value)[0]] = voice_string(key, entity.value)[1];
+        } else {
+            for (var i = 0; i < entity.length; i++) {
+                resultObj[voice_string(key, entity[i].value)[0]] = voice_string(key, entity[i].value)[1];
             }
         }
+    }
 
-        if (resultObj.intent === 'get_pictures') {
-            initialize();
-        }
-        currentSearch = resultObj;
-        facebookInit(currentSearch.intent);
+    if (resultObj.intent === 'get_pictures') {
+        initialize();
+    }
+
+    // Put the voice results in a global variable
+    currentSearch = resultObj;
+
+    // Call the overarching facebook function to match the intent string
+    facebookInit(currentSearch.intent);
 
 
-    };
-    mic.onerror = function (err) {
-        error("Error: " + err);
-    };
-    mic.onconnecting = function () {
-        info("Microphone is connecting");
-    };
-    mic.ondisconnected = function () {
-        info("Microphone is not connected");
-    };
+};
+mic.onerror = function (err) {
+    error("Error: " + err);
+};
+mic.onconnecting = function () {
+    info("Microphone is connecting");
+};
+mic.ondisconnected = function () {
+    info("Microphone is not connected");
+};
 
-    mic.connect('7Q3QCU74BR4O2A6ERD4YZAL4VM3BXLLE');
+mic.connect('7Q3QCU74BR4O2A6ERD4YZAL4VM3BXLLE');
 //      mic.start();
 //      mic.stop();
 
-    function voice_string(key, value) {
-        if (toString.call(value) !== "[object String]") {
-            value = JSON.stringify(value);
-        }
-        return [key, value];
+function voice_string(key, value) {
+    if (toString.call(value) !== "[object String]") {
+        value = JSON.stringify(value);
     }
+    return [key, value];
+}
 
-// https://github.com/kswedberg/jquery-smooth-scroll
-$('#scroll').on('click', function () {
-    $.smoothScroll(200);
 
-});
-
-$('.getOut').on('click', function(){
-    $(this).parent().parent().parent().hide(400);
-});
-
-$('#topjumbo').on('click', function() {
-   $(this).fadeOut(400);
-});

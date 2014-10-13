@@ -1,9 +1,0 @@
-{
-  "firebase": "speaktofacebook",
-  "public": "/Users/GKadillak/Projects/feedr/friend_finder/templates",
-  "ignore": [
-    "firebase.json",
-    "**/.*",
-    "**/node_modules/**"
-  ]
-}
