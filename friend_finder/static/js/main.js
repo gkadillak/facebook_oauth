@@ -26,6 +26,16 @@ var tileObj = {};
 
 
     function facebookInit(intent) {
+        // First cut at this, it would make sense to at least make each of these if statements call a separate function
+        // which handles getting the feed, liking a post, posting to facebook, etc. This would make the if statements a lot cleaner.
+        
+        // It also looks like many of these statements contain duplicate code which could be abstracted out
+        // into smaller, reusable pieces. For example, it looks like FB posts are "sanitized" into an easier
+        // to use version to place into HTML with some "undefined" checks. This could be a separate function
+        // that is reused in multiple spots.
+        
+        // get_feed and show_profile also look like they share a lot of the same code. It'd be good to make
+        // that DRYer as well.
         if (intent === 'show_profile') {
             FB.getLoginStatus(function (response) {
                 if (response.status === 'connected') {
@@ -393,6 +403,7 @@ mic.onresult = function (intent, entities) {
     }
 
     // Put the voice results in a global variable
+    // Global variables are bad! Do you need this since you just pass it into facebookInit anyways?
     currentSearch = resultObj;
 
     // Call the overarching facebook function to match the intent string
