@@ -81,10 +81,11 @@ body {
     position: relative;
 }
 
+
 #topjumbo {
-    position: relative;
+    position: fixed;
     border-radius: 0;
-    margin-top: 12%;
+    margin-top: 11%;
     border: 1px solid black;
     box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.5);
     background-color: white;

@@ -72,6 +72,19 @@ DATABASES = {
     }
 }
 
+AUTHENTICATION_BACKENDS = {
+    'social.backends.facebook.FacebookOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
+}
+
+SOCIAL_AUTH_FACEBOOK_KEY = '779403745457956'
+SOCIAL_AUTH_FACEBOOK_SECRET = '97f2766cc61ddbfefde3332b05b8acb2'
+
+SOCIAL_AUTH_FACEBOOK_SCOPE = ['email', 'public_profile', 'user_photos', 'read_stream']
+
+LOGIN_REDIRECT_URL = 'home'
+
+
 # Parse database configuration from $DATABASE_URL
 import dj_database_url
 DATABASES['default'] = dj_database_url.config()
