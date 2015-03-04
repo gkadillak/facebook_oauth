@@ -1,107 +1,100 @@
 $(function() {
-    var currentSearch = {};
-    var currentFBResults = {};
-    var tileObj = {};
 
     var _findIntent = {};
     var _dataType = {};
+    var $row = $('.row');
+    var baseUrl = 'http://localhost:8000';
 
-    _dataType.photo = function(item){
-            var rawPic;
-            var message;
-            var avatar;
-            var author;
-            var postNumber;
-            var story;
-            var linkNum;
-
-            if (response.data[i].picture.search('s130x130') > 0) {
-                rawPic = response.data[i].picture.replace('/s130x130', '');
-            }
-            else {
-                rawPic = response.data[i].picture.replace('/p130x130', '');
-            }
-
-            var largePic = rawPic.replace('/v', '');
-
-            // Show the message if it exists
-            if (typeof response.data[i].message != 'undefined') {
-                message = response.data[i].message
-            }
-
-            else {
-                message = '';
-            }
-
-            // Display the story if it exists
-            if (typeof response.data[i].story != 'undefined') {
-                story = response.data[i].story;
-            }
-            else {
-                story = '';
-            }
-
-            // Avatar is the mini profile picture
-            avatar = "https://graph.facebook.com/" + response.data[i].from.id + "/picture";
-            author = response.data[i].from.name;
-            postNumber = i;
-            linkNum = i;
-
-
-            // Create the HTML styling and add to page
-            var frontTiles = imageTile(largePic, message, avatar, author, postNumber, story, linkNum);
-            $('#frontTile').append(frontTiles);
-
-
-            // Add the object ID to a global object to be able to 'like' it later
-            tileObj[i] = response.data[i].id;
+    _dataType.photo = function(photoObj){
+        if (!photoObj.message){
+            photoObj.message = '';
+        }
+        $row.append(photoTile(photoObj));
     };
 
-
-    _dataType.status = function(item) {
-
+    _dataType.link = function(linkObj){
+        linkTile(linkObj);
     };
 
-    _findIntent.get_feed = function () {
-        console.log('Your intent is to show the profile');
-
-            $.ajax({
-                url: "http://localhost:8000/get_feed",
-                dataType: "json"
-            }).then(function (data) {
-                console.log('Data loaded');
-                feedLoaded(data);
-            }).fail(function(error){
-                alert('Something has gone horribly wrong:', error);
-            });
+    _dataType.status = function(statusObj) {
+        console.log('Status', statusObj);
     };
 
-    _findIntent.showProfile = function(){
+    _dataType.video = function(videoObj){
+        console.log('Video', videoObj);
+    };
 
+    _findIntent.get_feed = function() {
+        $.ajax({
+            url: baseUrl + "/get_feed",
+            dataType: "json" // jsonp won't work with promises
+        }).then(function (data) {
+            feedLoaded(data);
+            _findIntent.nextUrl = data.paging.next;
+        }).fail(function(error){
+            alert('There has been an error:', error);
+        });
+    };
 
+    _findIntent.show_profile = function(){
+        $.ajax({
+            url: baseUrl + '/get_profile',
+            dataType: 'json'
+        }).then(function(data){
+            feedLoaded(data);
+        }).fail(function(error){
+           alert('Error with show profile:', error);
+        });
+    };
+
+    _findIntent.get_next = function(){
+        $.ajax({
+            url: _findIntent.nextUrl,
+            dataType: 'jsonp'
+        }).then(function(data){
+            console.log(data);
+        }).fail(function(error){
+           console.log('Error with get next:', error);
+        });
     };
 
     function feedLoaded(response){
-        var $row = $('.row');
         response.data.forEach(function(item){
-            if (item.picture){
-                $row.append(putTile(item.picture));
-            }
-            console.log(item.picture);
+            _dataType[item.type](item);
         });
     }
 
-    var putTile = function(link){
+    var photoTile = function(src){
         return '<div class="item">' +
             '<div class="well">' +
-                '<img src="' + link + '" />' +
+                '<img src="' + src.picture + '" />' +
+                '<p>' + src.message + '</p>' +
+            '</div>' +
+        '</div>'
+    };
+
+    var linkTile = function(link){
+        return '<div class="item">' +
+            '<div class="well">' +
+                '<a href="' + link.link + '">' + link.message + '</a>' +
+            '</div>' +
+        '</div>'
+    };
+
+    var statusTile = function(status){
+        return '<div class="item">' +
+            '<div class="well">' +
+                '<h1>' + link.link + '">' + link.message + '</a>' +
             '</div>' +
         '</div>'
     };
 
 
-    _findIntent.get_feed();
+    _findIntent.get_feed(); // Get user's feed upon page load
+    console.log(_findIntent.nextUrl);
     // Take in microphone audio, translate to intent string and pull out
+
+
     var mic = new Wit.Microphone(document.getElementById("microphone"));
     var info = function (msg) {
         document.getElementById("info").innerHTML = msg;
@@ -121,29 +114,26 @@ $(function() {
         info("");
     };
 
-        mic.onresult = function (intent, entities) {
-            var resultObj = {};
-            resultObj['intent'] = voice_string("intent", intent)[1];
+    mic.onresult = function (intent, entities) {
+        var resultObj = {};
+        resultObj['intent'] = voice_string("intent", intent)[1];
 
 
-            for (var key in entities) {
-                var entity = entities[key];
+        for (var key in entities) {
+            var entity = entities[key];
 
 
-                if (!(entity instanceof Array)) {
-                    resultObj[voice_string(key, entity.value)[0]] = voice_string(key, entity.value)[1];
-                } else {
-                    for (var i = 0; i < entity.length; i++) {
-                        resultObj[voice_string(key, entity[i].value)[0]] = voice_string(key, entity[i].value)[1];
-                    }
+            if (!(entity instanceof Array)) {
+                resultObj[voice_string(key, entity.value)[0]] = voice_string(key, entity.value)[1];
+            } else {
+                for (var i = 0; i < entity.length; i++) {
+                    resultObj[voice_string(key, entity[i].value)[0]] = voice_string(key, entity[i].value)[1];
                 }
             }
+        }
 
-            // Put the voice results in a global variable
-            currentSearch = resultObj;
-
-            // Call the overarching facebook function to match the intent string
-            facebookInit('get_feed');
+        // Put the voice results in a global variable
+        currentSearch = resultObj;
 
 
         };
@@ -158,8 +148,6 @@ $(function() {
         };
 
         mic.connect('7Q3QCU74BR4O2A6ERD4YZAL4VM3BXLLE');
-    //      mic.start();
-    //      mic.stop();
 
         function voice_string(key, value) {
             if (toString.call(value) !== "[object String]") {
@@ -167,78 +155,5 @@ $(function() {
             }
             return [key, value];
         }
-
-
-
-    function facebookInit(intent) {
-        if (intent === 'show_profile') {
-
-        }
-
-        if (intent === 'scroll') {
-            if (currentSearch.direction === 'down') {
-                $.smoothScroll(200);
-            }
-
-            else if (currentSearch.direction === 'up') {
-                $.smoothScroll(-200);
-            }
-        }
-
-        // "POST {message body}"
-        if (intent === 'post') {
-            FB.getLoginStatus(function (response) {
-                if (response.status === 'connected') {
-                    FB.api(
-                        "/me/feed",
-                        "POST",
-                        {"message": currentSearch.message_body},
-                        function (response) {
-                            if (response && !response.error) {
-                                alert('You posted:\n' + currentSearch.message_body);
-
-                            }
-                        }
-                    );
-                }
-            });
-        }
-
-        // LIKE TILE {TILE NUMBER}
-        if (intent === 'like_post') {
-            FB.getLoginStatus(function (response) {
-                if (response.status === 'connected') {
-                    FB.api(
-                            '/' + tileObj[currentSearch.number] + '/likes',
-                        'POST',
-                        function (response) {
-                            // If success, append a cute little thumbs up next to the post number
-                            if (response && !response.error) {
-                                console.log(response);
-                                $('#like_' + currentSearch.number).html(
-                                    '<img src="http://3.bp.blogspot.com/-6dmLiW9yjrE/TrI4xXtpPLI/AAAAAAAAB5M/ozDIGs0LOkE/s400/FacebookChatEmoticonsTumbUpLikeMessengeRoo.jpg" />'
-                                );
-                            }
-                        }
-                    )
-                }
-            })
-        }
-
-        // "WHAT IS MY LAST NAME"
-        if (intent === 'get_lastname') {
-            FB.getLoginStatus(function (response) {
-                if (response.status === 'connected') {
-                    FB.api(
-                        '/me',
-                        function (response) {
-                            currentFBResults = response;
-
-                            $('#displaymessage').html('Hello Mr. ' + response.last_name + '. How are you today?');
-                        });
-                }
-            });
-        } //lastname check
-    }
 
 }());
